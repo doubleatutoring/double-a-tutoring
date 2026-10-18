@@ -1,8 +1,5 @@
 
-const TUTOR_EMAILS = [
-  "anshtalwar1954@gmail.com",
-  "akumar0018@mymail.lausd.net"
-];
+const FORMSPREE_URL = "https://formspree.io/f/mljgrav";
 
 const menu = document.querySelector("#menu");
 const links = document.querySelector("#links");
@@ -22,42 +19,48 @@ links.querySelectorAll("a").forEach(link => {
 document.querySelector("#year").textContent =
   new Date().getFullYear();
 
-document.querySelector("#inquiry").addEventListener("submit", event => {
+const form = document.querySelector("#inquiry");
+const status = document.querySelector("#status");
+const submitButton = form.querySelector('button[type="submit"]');
+
+submitButton.textContent = "Submit Inquiry →";
+
+form.addEventListener("submit", async event => {
   event.preventDefault();
 
-  const status = document.querySelector("#status");
-  const data = new FormData(event.currentTarget);
+  if (!form.reportValidity()) return;
 
-  const value = name =>
-    String(data.get(name) || "").trim();
+  submitButton.disabled = true;
+  submitButton.textContent = "Sending...";
+  status.textContent = "Submitting your inquiry...";
 
-  const subject = "Double A Tutoring Inquiry - " + value("subject");
+  try {
+    const data = new FormData(form);
 
-  const body = [
-    "New Tutoring Inquiry",
-    "",
-    "Parent/Guardian: " + value("parent"),
-    "Email: " + value("email"),
-    "Student Grade: " + value("grade"),
-    "Subject: " + value("subject"),
-    "Session Format: " + value("mode"),
-    "",
-    "What they need help with:",
-    value("message") || "Not provided",
-    "",
-    "Double A Tutoring",
-    "$15 per hour"
-  ].join("\n");
+    data.set("_subject", "New Double A Tutoring Inquiry");
 
-  const recipients = TUTOR_EMAILS.join(",");
+    const response = await fetch(FORMSPREE_URL, {
+      method: "POST",
+      body: data,
+      headers: {
+        "Accept": "application/json"
+      }
+    });
 
-  const mailto =
-    "mailto:" + recipients +
-    "?subject=" + encodeURIComponent(subject) +
-    "&body=" + encodeURIComponent(body);
+    if (response.ok) {
+      status.textContent =
+        "Success! Your tutoring inquiry has been submitted. We'll get back to you soon.";
 
-  status.textContent =
-    "Your email app should open now. Please press Send to submit your inquiry.";
-
-  window.location.href = mailto;
+      form.reset();
+    } else {
+      status.textContent =
+        "Sorry, your inquiry could not be submitted. Please try again.";
+    }
+  } catch (error) {
+    status.textContent =
+      "Connection error. Please check your internet and try again.";
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit Inquiry →";
+  }
 });
