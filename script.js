@@ -1,5 +1,5 @@
 
-const FORMSPREE_URL = "https://formspree.io/f/mljgrav";
+const FORMSPREE_URL = "https://formspree.io/f/mljgvrav";
 
 const menu = document.querySelector("#menu");
 const links = document.querySelector("#links");
